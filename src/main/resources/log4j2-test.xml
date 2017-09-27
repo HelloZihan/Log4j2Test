@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <!-- 以下的配置可以简单概括为：初始日志名称是error.log，一天之后，将rolling.log修改为error-日期.log并压缩为error-日期.log.gz(如error-20170806.log.gz，2017年8月6号)，rolling.log重新开始写； -->
+        <RollingFile name="error-appender" fileName="log/error.log" filePattern="/home/zj/idea-ic/log4j2Test/log/error-%d{yyyyMMdd}.log.gz">
+            <PatternLayout>
+                <Pattern>%d{MMdd HH:mm:ss.SSS} %-5p [%c][%t] %m%n</Pattern>
+            </PatternLayout>
+            <!-- 关键点在于filePattern后的日期格式，以及TimeBasedTriggeringPolicy的interval，日期格式精确到哪一位，interval也精确到哪一个单位 -->
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/><!-- 每天一次，即上面压缩日志的频率-->
+            </Policies>
+        </RollingFile>
+        <RollingFile name="debug-appender" fileName="log/debug.log" filePattern="/home/zj/idea-ic/log4j2Test/log/debug-%d{yyyyMMdd}.log.gz">
+            <PatternLayout>
+                <Pattern>%d{MMdd HH:mm:ss.SSS} %-5p [%c][%t] %m%n</Pattern><!-- 定义日志输出的样式-->
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <Filters>
+                <ThresholdFilter level="warn" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+        </RollingFile>
+        <!--记录所有request请求的日志-->
+        <RollingFile name="request-appender" fileName="log/request.log" filePattern="/home/zj/idea-ic/log4j2Test/log/request-%d{yyyyMMdd}.log.gz">
+            <PatternLayout>
+                <Pattern>%d{MMdd HH:mm:ss.SSS} %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+
+        <AsyncLogger name="com.test" additivity="false" level="DEBUG" includeLocation="true">
+            <appenderRef ref="debug-appender" level="debug"/>
+            <AppenderRef ref="error-appender" level="warn"/>
+        </AsyncLogger>
+
+        <AsyncLogger name="request" additivity="false" level="info" includeLocation="true">
+            <appenderRef ref="request-appender"/>
+        </AsyncLogger>
+
+        <AsyncRoot level="error" includeLocation="true">
+            <AppenderRef ref="error-appender"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>
